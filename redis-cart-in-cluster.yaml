@@ -1,0 +1,53 @@
+apiVersion: core.api.humanitec.io/v1
+kind: Definition
+metadata:
+  id: redis-cart-in-cluster
+object:
+  name: redis-cart-in-cluster
+  type: redis
+  driver_type: humanitec/template
+  driver_inputs:
+    values:
+      templates:
+        manifests: |-
+          deployment.yaml:
+            location: namespace
+            data:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: redis-cart
+              spec:
+                selector:
+                  matchLabels:
+                    app: redis-cart
+                template:
+                  metadata:
+                    labels:
+                      app: redis-cart
+                  spec:
+                    containers:
+                    - name: redis
+                      image: redis:alpine
+                      ports:
+                      - containerPort: 6379
+          service.yaml:
+            location: namespace
+            data:
+              apiVersion: v1
+              kind: Service
+              metadata:
+                name: redis-cart
+              spec:
+                type: ClusterIP
+                selector:
+                  app: redis-cart
+                ports:
+                - name: tcp-redis
+                  port: 6379
+                  targetPort: 6379
+        outputs: |
+          host: redis-cart
+          port: 6379
+  criteria:
+    - {}
